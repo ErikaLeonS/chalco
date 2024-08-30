@@ -61,14 +61,9 @@
 
         // Cargar GeoJSON de Inundación
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/inundacion.geojson')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al cargar el archivo GeoJSON de inundación: ' + response.statusText);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('GeoJSON de Inundación cargado correctamente:', data); // Depuración
+                console.log('GeoJSON de Inundación cargado correctamente:', data);
                 capaInundacion = L.geoJSON(data, {
                     style: {
                         color: "blue",
@@ -89,7 +84,10 @@
                         return L.marker(latlng, { icon: iconoAzul });
                     },
                     onEachFeature: function (feature, layer) {
-                        layer.bindPopup('<div class="popup-azul">Recorrido 23 de agosto de 2024</div>', { className: 'popup-azul' });
+                        var fotoNombre = feature.properties.name; // Obtén el nombre de la foto desde el GeoJSON
+                        var fotoUrl = `fotos_rec_23082024/${fotoNombre}`; // Construye la URL de la foto
+                        var popupContent = `<div class="popup-azul">Recorrido 23 de agosto de 2024<br><img src="${fotoUrl}" width="150" height="100"></div>`;
+                        layer.bindPopup(popupContent, { className: 'popup-azul' });
                     }
                 });
             })
@@ -104,7 +102,10 @@
                         return L.marker(latlng, { icon: iconoNaranja });
                     },
                     onEachFeature: function (feature, layer) {
-                        layer.bindPopup('<div class="popup-naranja">Recorrido 27 de agosto de 2024</div>', { className: 'popup-naranja' });
+                        var fotoNombre = feature.properties.name; // Obtén el nombre de la foto desde el GeoJSON
+                        var fotoUrl = `fotos_rec_27082024/${fotoNombre}`; // Construye la URL de la foto
+                        var popupContent = `<div class="popup-naranja">Recorrido 27 de agosto de 2024<br><img src="${fotoUrl}" width="150" height="100"></div>`;
+                        layer.bindPopup(popupContent, { className: 'popup-naranja' });
                     }
                 });
             })
