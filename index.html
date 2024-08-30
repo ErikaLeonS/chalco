@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         #map { height: 600px; }
+
+        /* Estilo de popup naranja */
+        .popup-naranja {
+            background-color: orange;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -26,11 +34,24 @@
             maxZoom: 18,
         }).addTo(map);
 
-        // Ruta de la carpeta de fotos en GitHub
-        var fotosCarpeta = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_23082024/'; // Cambia esto a tu URL correcta
+        // Rutas de las carpetas de fotos en GitHub
+        var fotosCarpeta1 = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_23082024/';
+        var fotosCarpeta2 = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_27082024/'; // Nueva carpeta
 
-        // Número total de fotos
-        var totalFotos = 148;
+        // Número total de fotos en cada carpeta
+        var totalFotos1 = 148;
+        var totalFotos2 = 100; // Cambia este valor según el número real de fotos en la segunda carpeta
+
+        // Definir un icono de marcador naranja personalizado
+        var iconoNaranja = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png', // Usa la URL de un icono base
+            iconSize: [25, 41], // Tamaño del icono
+            iconAnchor: [12, 41], // Punto de anclaje del icono
+            popupAnchor: [1, -34], // Punto de anclaje del popup
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png', // Sombra del icono
+            shadowSize: [41, 41],
+            className: 'marker-naranja' // Clase CSS para el color naranja
+        });
 
         // Función para convertir grados, minutos y segundos a decimal
         function convertirDMSToDD(grados, minutos, segundos, direccion) {
@@ -60,45 +81,49 @@
             };
         }
 
-        // Verificar con una URL fija de prueba
-        var pruebaFotoUrl = fotosCarpeta + encodeFileName('1 (1).jpg');
-        verificarURL(pruebaFotoUrl);
+        // Función para cargar fotos y agregar marcadores al mapa
+        function cargarFotos(fotosCarpeta, totalFotos, popupClase, iconoPersonalizado) {
+            for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
+                (function(num) { // Usamos una IIFE para capturar el valor de 'num'
+                    var fotoNombre = '1 (' + num + ').jpg'; // Construye el nombre de archivo
+                    var fotoUrl = fotosCarpeta + encodeFileName(fotoNombre); // Codifica los espacios en la URL
+                    verificarURL(fotoUrl); // Verifica cada URL generada
 
-        // Cargar las fotos y extraer las coordenadas utilizando un bucle
-        for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
-            (function(num) { // Usamos una IIFE para capturar el valor de 'num'
-                var fotoNombre = '1 (' + num + ').jpg'; // Construye el nombre de archivo
-                var fotoUrl = fotosCarpeta + encodeFileName(fotoNombre); // Codifica los espacios en la URL
-                verificarURL(fotoUrl); // Verifica cada URL generada
+                    var img = new Image();
+                    img.src = fotoUrl;
 
-                var img = new Image();
-                img.src = fotoUrl;
+                    img.onload = function() {
+                        EXIF.getData(img, function() {
+                            var latitud = EXIF.getTag(this, "GPSLatitude");
+                            var latitudRef = EXIF.getTag(this, "GPSLatitudeRef");
+                            var longitud = EXIF.getTag(this, "GPSLongitude");
+                            var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-                img.onload = function() {
-                    EXIF.getData(img, function() {
-                        var latitud = EXIF.getTag(this, "GPSLatitude");
-                        var latitudRef = EXIF.getTag(this, "GPSLatitudeRef");
-                        var longitud = EXIF.getTag(this, "GPSLongitude");
-                        var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
+                            if (latitud && longitud) {
+                                var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
+                                var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
+                                
+                                // Añadir marcador al mapa con icono personalizado si se proporciona
+                                var marker = L.marker([lat, lon], { icon: iconoPersonalizado }).addTo(map);
+                                marker.bindPopup('<div class="' + popupClase + '"><img src="' + fotoUrl + '" width="150" height="150"/></div>');
+                            } else {
+                                console.error('No se encontraron datos GPS en:', fotoUrl);
+                            }
+                        });
+                    };
 
-                        if (latitud && longitud) {
-                            var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
-                            var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
-                            
-                            // Añadir marcador al mapa
-                            var marker = L.marker([lat, lon]).addTo(map);
-                            marker.bindPopup('<img src="' + fotoUrl + '" width="150" height="150"/>');
-                        } else {
-                            console.error('No se encontraron datos GPS en:', fotoUrl);
-                        }
-                    });
-                };
-
-                img.onerror = function() {
-                    console.error('Error al cargar la foto:', fotoUrl);
-                };
-            })(num); // IIFE para capturar el valor actual de 'num'
+                    img.onerror = function() {
+                        console.error('Error al cargar la foto:', fotoUrl);
+                    };
+                })(num); // IIFE para capturar el valor actual de 'num'
+            }
         }
+
+        // Cargar fotos de la primera carpeta con popup estándar y marcador predeterminado
+        cargarFotos(fotosCarpeta1, totalFotos1, '', L.Icon.Default());
+
+        // Cargar fotos de la segunda carpeta con popup y marcador naranja
+        cargarFotos(fotosCarpeta2, totalFotos2, 'popup-naranja', iconoNaranja);
     </script>
 </body>
 </html>
