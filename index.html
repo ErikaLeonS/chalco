@@ -93,17 +93,15 @@
             };
         }
 
-        // Función para cargar fotos de manera asíncrona y agregar marcadores
-        async function cargarFotosAsincrono(fotosCarpeta, totalFotos, popupClase, iconoPersonalizado, capa) {
-            const promesas = [];
+        // Función para cargar fotos y agregar marcadores al mapa
+        function cargarFotos(fotosCarpeta, totalFotos, popupClase, iconoPersonalizado, capa) {
+            for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
+                (function(num) { // Usamos una IIFE para capturar el valor de 'num'
+                    var fotoNombre = '1 (' + num + ').jpg'; // Construye el nombre de archivo
+                    var fotoUrl = fotosCarpeta + encodeFileName(fotoNombre); // Codifica los espacios en la URL
+                    verificarURL(fotoUrl); // Verifica cada URL generada
 
-            for (let num = 1; num <= totalFotos; num++) {
-                const fotoNombre = '1 (' + num + ').jpg';
-                const fotoUrl = fotosCarpeta + encodeFileName(fotoNombre);
-                verificarURL(fotoUrl);
-
-                const promesa = new Promise((resolve, reject) => {
-                    const img = new Image();
+                    var img = new Image();
                     img.src = fotoUrl;
 
                     img.onload = function() {
@@ -113,39 +111,31 @@
                             var longitud = EXIF.getTag(this, "GPSLongitude");
                             var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-                            // Verificar si los datos GPS son válidos
                             if (latitud && longitud) {
                                 var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
                                 var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
-
-                                // Añadir marcador al mapa con icono personalizado
+                                
+                                // Añadir marcador al mapa con icono personalizado si se proporciona
                                 var marker = L.marker([lat, lon], { icon: iconoPersonalizado }).addTo(capa);
                                 marker.bindPopup('<div class="' + popupClase + '"><img src="' + fotoUrl + '" width="150" height="150"/></div>');
                             } else {
-                                console.warn('No se encontraron datos GPS en:', fotoUrl);
+                                console.error('No se encontraron datos GPS en:', fotoUrl);
                             }
-                            resolve();
                         });
                     };
 
                     img.onerror = function() {
                         console.error('Error al cargar la foto:', fotoUrl);
-                        resolve(); // Resolver incluso si hay un error para que todas las promesas se completen
                     };
-                });
-
-                promesas.push(promesa);
+                })(num); // IIFE para capturar el valor actual de 'num'
             }
-
-            await Promise.all(promesas); // Esperar a que todas las fotos se carguen
-            console.log('Todas las fotos de ' + fotosCarpeta + ' han sido cargadas.');
         }
 
         // Cargar fotos de la primera carpeta en su respectiva capa de grupo
-        cargarFotosAsincrono(fotosCarpeta1, totalFotos1, '', L.Icon.Default(), capaRecorrido2308);
+        cargarFotos(fotosCarpeta1, totalFotos1, '', L.Icon.Default(), capaRecorrido2308);
 
         // Cargar fotos de la segunda carpeta en su respectiva capa de grupo
-        cargarFotosAsincrono(fotosCarpeta2, totalFotos2, 'popup-naranja', iconoNaranja, capaRecorrido2708);
+        cargarFotos(fotosCarpeta2, totalFotos2, 'popup-naranja', iconoNaranja, capaRecorrido2708);
 
         // Cargar el GeoJSON y agregarlo a la capa de grupo de inundación
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/inundacion.geojson')
