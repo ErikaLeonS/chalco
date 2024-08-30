@@ -29,10 +29,8 @@
         // Ruta de la carpeta de fotos en GitHub
         var fotosCarpeta = 'https://raw.githubusercontent.com/usuario/repositorio/rama/fotos_rec_23082024/'; // Cambia esto a tu URL de GitHub
 
-        // Lista de fotos (deberías generar esta lista automáticamente si es posible)
-        var fotos = [
-            'foto1.jpg', 'foto2.jpg', 'foto3.jpg', // Añade todas las fotos aquí
-        ];
+        // Número total de fotos
+        var totalFotos = 148;
 
         // Función para convertir grados, minutos y segundos a decimal
         function convertirDMSToDD(grados, minutos, segundos, direccion) {
@@ -43,30 +41,39 @@
             return dd;
         }
 
-        // Cargar las fotos y extraer las coordenadas
-        fotos.forEach(function(foto) {
-            var fotoUrl = fotosCarpeta + foto;
-            var img = new Image();
-            img.src = fotoUrl;
+        // Cargar las fotos y extraer las coordenadas utilizando un bucle
+        for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
+            (function(num) { // Usamos una IIFE para capturar el valor de 'num'
+                var fotoUrl = fotosCarpeta + '1 (' + num + ').jpg'; // Construye el nombre de archivo
+                var img = new Image();
+                img.src = fotoUrl;
 
-            img.onload = function() {
-                EXIF.getData(img, function() {
-                    var latitud = EXIF.getTag(this, "GPSLatitude");
-                    var latitudRef = EXIF.getTag(this, "GPSLatitudeRef");
-                    var longitud = EXIF.getTag(this, "GPSLongitude");
-                    var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
+                img.onload = function() {
+                    EXIF.getData(img, function() {
+                        var latitud = EXIF.getTag(this, "GPSLatitude");
+                        var latitudRef = EXIF.getTag(this, "GPSLatitudeRef");
+                        var longitud = EXIF.getTag(this, "GPSLongitude");
+                        var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-                    if (latitud && longitud) {
-                        var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
-                        var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
-                        
-                        // Añadir marcador al mapa
-                        var marker = L.marker([lat, lon]).addTo(map);
-                        marker.bindPopup('<img src="' + fotoUrl + '" width="150" height="150"/>');
-                    }
-                });
-            };
-        });
+                        if (latitud && longitud) {
+                            var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
+                            var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
+                            
+                            // Añadir marcador al mapa
+                            var marker = L.marker([lat, lon]).addTo(map);
+                            marker.bindPopup('<img src="' + fotoUrl + '" width="150" height="150"/>');
+                        } else {
+                            console.error('No se encontraron datos GPS en:', fotoUrl);
+                        }
+                    });
+                };
+
+                img.onerror = function() {
+                    console.error('Error al cargar la foto:', fotoUrl);
+                };
+            })(num); // IIFE para capturar el valor actual de 'num'
+        }
     </script>
 </body>
 </html>
+
