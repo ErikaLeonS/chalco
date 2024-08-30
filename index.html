@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Incluye el CSS de Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
         #map { height: 600px; }
         .slider-container {
@@ -23,7 +23,7 @@
     <div id="map"></div>
 
     <!-- Incluye el JavaScript de Leaflet -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
     <script>
         // Inicializa el mapa centrado en Chalco, Estado de México
@@ -90,11 +90,7 @@
             .catch(error => console.error('Error al cargar rec_27042024.geojson:', error));
 
         // Crear el control de capas
-        var controlCapas = L.control.layers(null, {
-            "Inundación": capaInundacion,
-            "Recorrido 23 de abril de 2024": capaRec2304,
-            "Recorrido 27 de abril de 2024": capaRec2704
-        }).addTo(map);
+        var controlCapas = L.control.layers(null, {}).addTo(map);
 
         // Función para agregar las capas al control de capas después de que se carguen
         function agregarCapaAlControl(nombre, capa) {
@@ -105,6 +101,7 @@
 
         // Agregar las capas al control de capas después de que se carguen
         setTimeout(function() {
+            agregarCapaAlControl("Inundación", capaInundacion);
             agregarCapaAlControl("Recorrido 23 de abril de 2024", capaRec2304);
             agregarCapaAlControl("Recorrido 27 de abril de 2024", capaRec2704);
         }, 1000);
