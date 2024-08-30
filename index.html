@@ -46,27 +46,27 @@
             maxZoom: 18,
         }).addTo(map);
 
-        // Capas GeoJSON
-        var capaInundacion, capaRec2304, capaRec2704;
-
-        // Definir iconos de marcador personalizados
+        // Definir íconos de marcadores personalizados
         var iconoAzul = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
             shadowSize: [41, 41]
         });
 
         var iconoNaranja = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
             shadowSize: [41, 41]
         });
+
+        // Capas GeoJSON
+        var capaInundacion, capaRec2304, capaRec2704;
 
         // Cargar GeoJSON de Inundación y añadir un control de transparencia
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/inundacion.geojson')
@@ -102,10 +102,6 @@
                     pointToLayer: function (feature, latlng) {
                         return L.marker(latlng, { icon: iconoAzul });
                     },
-                    style: {
-                        color: "green",
-                        weight: 2
-                    },
                     onEachFeature: function (feature, layer) {
                         layer.bindPopup('<div class="popup-azul">Recorrido 23 de agosto de 2024</div>', { className: 'popup-azul' });
                     }
@@ -120,10 +116,6 @@
                 capaRec2704 = L.geoJSON(data, {
                     pointToLayer: function (feature, latlng) {
                         return L.marker(latlng, { icon: iconoNaranja });
-                    },
-                    style: {
-                        color: "red",
-                        weight: 2
                     },
                     onEachFeature: function (feature, layer) {
                         layer.bindPopup('<div class="popup-naranja">Recorrido 27 de agosto de 2024</div>', { className: 'popup-naranja' });
