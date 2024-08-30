@@ -59,22 +59,6 @@
         // Capas GeoJSON
         var capaInundacion, capaRec2304, capaRec2704;
 
-        // Cargar GeoJSON de Inundación
-        fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/inundacion.geojson')
-            .then(response => response.json())
-            .then(data => {
-                console.log('GeoJSON de Inundación cargado correctamente:', data);
-                capaInundacion = L.geoJSON(data, {
-                    style: {
-                        color: "blue",
-                        fillColor: "cyan",
-                        fillOpacity: 0.5,
-                        weight: 2
-                    }
-                }).addTo(map);
-            })
-            .catch(error => console.error('Error al cargar inundacion.geojson:', error));
-
         // Cargar GeoJSON de Recorrido 23 de agosto de 2024
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/rec_23042024.geojson')
             .then(response => response.json())
@@ -123,7 +107,6 @@
 
         // Agregar las capas al control de capas después de que se carguen
         setTimeout(function() {
-            agregarCapaAlControl("Inundación", capaInundacion);
             agregarCapaAlControl("Recorrido 23 de agosto de 2024", capaRec2304);
             agregarCapaAlControl("Recorrido 27 de agosto de 2024", capaRec2704);
         }, 1000);
