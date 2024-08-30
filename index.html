@@ -17,6 +17,18 @@
             padding: 10px;
             border-radius: 5px;
         }
+        .popup-azul {
+            background-color: blue;
+            color: white;
+            padding: 3px;
+            border-radius: 5px;
+        }
+        .popup-naranja {
+            background-color: orange;
+            color: white;
+            padding: 3px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +75,7 @@
             })
             .catch(error => console.error('Error al cargar inundacion.geojson:', error));
 
-        // Cargar GeoJSON de Recorrido 23 de abril de 2024
+        // Cargar GeoJSON de Recorrido 23 de agosto de 2024
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/rec_23042024.geojson')
             .then(response => response.json())
             .then(data => {
@@ -71,12 +83,15 @@
                     style: {
                         color: "green",
                         weight: 2
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.bindPopup('<div class="popup-azul">Recorrido 23 de agosto de 2024</div>', { className: 'popup-azul' });
                     }
                 });
             })
             .catch(error => console.error('Error al cargar rec_23042024.geojson:', error));
 
-        // Cargar GeoJSON de Recorrido 27 de abril de 2024
+        // Cargar GeoJSON de Recorrido 27 de agosto de 2024
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/rec_27042024.geojson')
             .then(response => response.json())
             .then(data => {
@@ -84,6 +99,9 @@
                     style: {
                         color: "red",
                         weight: 2
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.bindPopup('<div class="popup-naranja">Recorrido 27 de agosto de 2024</div>', { className: 'popup-naranja' });
                     }
                 });
             })
