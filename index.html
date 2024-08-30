@@ -46,11 +46,31 @@
             return fileName.replace(/ /g, '%20');
         }
 
+        // Función de depuración para verificar la URL
+        function verificarURL(fotoUrl) {
+            var img = new Image();
+            img.src = fotoUrl;
+
+            img.onload = function() {
+                console.log('Foto cargada correctamente:', fotoUrl);
+            };
+
+            img.onerror = function() {
+                console.error('Error al cargar la foto:', fotoUrl);
+            };
+        }
+
+        // Verificar con una URL fija de prueba
+        var pruebaFotoUrl = fotosCarpeta + encodeFileName('1 (1).jpg');
+        verificarURL(pruebaFotoUrl);
+
         // Cargar las fotos y extraer las coordenadas utilizando un bucle
         for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
             (function(num) { // Usamos una IIFE para capturar el valor de 'num'
                 var fotoNombre = '1 (' + num + ').jpg'; // Construye el nombre de archivo
                 var fotoUrl = fotosCarpeta + encodeFileName(fotoNombre); // Codifica los espacios en la URL
+                verificarURL(fotoUrl); // Verifica cada URL generada
+
                 var img = new Image();
                 img.src = fotoUrl;
 
