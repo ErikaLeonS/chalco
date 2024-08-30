@@ -68,7 +68,7 @@
                         return L.marker(latlng, { icon: iconoAzul });
                     },
                     onEachFeature: function (feature, layer) {
-                        var fotoNombre = feature.properties.name; // Obtén el nombre de la foto desde el GeoJSON
+                        var fotoNombre = encodeURIComponent(feature.properties.name); // Codifica el nombre de la foto
                         var fotoUrl = `fotos_rec_23082024/${fotoNombre}`; // Construye la URL de la foto
                         var popupContent = `<div class="popup-azul">Recorrido 23 de agosto de 2024<br><img src="${fotoUrl}" width="150" height="100"></div>`;
                         layer.bindPopup(popupContent, { className: 'popup-azul' });
@@ -86,7 +86,7 @@
                         return L.marker(latlng, { icon: iconoNaranja });
                     },
                     onEachFeature: function (feature, layer) {
-                        var fotoNombre = feature.properties.name; // Obtén el nombre de la foto desde el GeoJSON
+                        var fotoNombre = encodeURIComponent(feature.properties.name); // Codifica el nombre de la foto
                         var fotoUrl = `fotos_rec_27082024/${fotoNombre}`; // Construye la URL de la foto
                         var popupContent = `<div class="popup-naranja">Recorrido 27 de agosto de 2024<br><img src="${fotoUrl}" width="150" height="100"></div>`;
                         layer.bindPopup(popupContent, { className: 'popup-naranja' });
