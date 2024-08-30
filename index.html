@@ -8,15 +8,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
         #map { height: 600px; }
-        .slider-container {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-        }
         .popup-azul {
             background-color: blue;
             color: white;
@@ -68,7 +59,7 @@
         // Capas GeoJSON
         var capaInundacion, capaRec2304, capaRec2704;
 
-        // Cargar GeoJSON de Inundación y añadir un control de transparencia
+        // Cargar GeoJSON de Inundación
         fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/inundacion.geojson')
             .then(response => {
                 if (!response.ok) {
@@ -86,17 +77,6 @@
                         weight: 2
                     }
                 }).addTo(map);
-
-                // Control de transparencia para la capa de inundación
-                var sliderContainer = L.DomUtil.create('div', 'slider-container');
-                sliderContainer.innerHTML = '<label>Transparencia Inundación: <input type="range" min="0" max="1" step="0.1" value="0.5" id="transparencySlider"></label>';
-                document.body.appendChild(sliderContainer);
-
-                var transparencySlider = document.getElementById('transparencySlider');
-                transparencySlider.addEventListener('input', function() {
-                    var opacity = this.value;
-                    capaInundacion.setStyle({ fillOpacity: opacity });
-                });
             })
             .catch(error => console.error('Error al cargar inundacion.geojson:', error));
 
