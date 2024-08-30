@@ -41,10 +41,16 @@
             return dd;
         }
 
+        // Función para reemplazar espacios en nombres de archivos
+        function encodeFileName(fileName) {
+            return fileName.replace(/ /g, '%20');
+        }
+
         // Cargar las fotos y extraer las coordenadas utilizando un bucle
         for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
             (function(num) { // Usamos una IIFE para capturar el valor de 'num'
-                var fotoUrl = fotosCarpeta + '1 (' + num + ').jpg'; // Construye el nombre de archivo
+                var fotoNombre = '1 (' + num + ').jpg'; // Construye el nombre de archivo
+                var fotoUrl = fotosCarpeta + encodeFileName(fotoNombre); // Codifica los espacios en la URL
                 var img = new Image();
                 img.src = fotoUrl;
 
@@ -55,7 +61,12 @@
                         var longitud = EXIF.getTag(this, "GPSLongitude");
                         var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
 
+                        // Depuración: Verificar si los valores son válidos
+                        console.log('Latitud:', latitud, 'Ref:', latitudRef);
+                        console.log('Longitud:', longitud, 'Ref:', longitudRef);
+
                         if (latitud && longitud) {
+                            // Convierte coordenadas GPS en formato DMS a decimal
                             var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
                             var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
                             
@@ -63,7 +74,7 @@
                             var marker = L.marker([lat, lon]).addTo(map);
                             marker.bindPopup('<img src="' + fotoUrl + '" width="150" height="150"/>');
                         } else {
-                            console.error('No se encontraron datos GPS en:', fotoUrl);
+                            console.error('No se encontraron datos GPS válidos en:', fotoUrl);
                         }
                     });
                 };
@@ -76,4 +87,3 @@
     </script>
 </body>
 </html>
-
