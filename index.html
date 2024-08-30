@@ -27,7 +27,7 @@
         }).addTo(map);
 
         // Ruta de la carpeta de fotos en GitHub
-        var fotosCarpeta = 'https://raw.githubusercontent.com/usuario/repositorio/rama/fotos_rec_23082024/'; // Cambia esto a tu URL de GitHub
+        var fotosCarpeta = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_23082024/'; // Cambia esto a tu URL correcta
 
         // Número total de fotos
         var totalFotos = 148;
@@ -61,12 +61,7 @@
                         var longitud = EXIF.getTag(this, "GPSLongitude");
                         var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-                        // Depuración: Verificar si los valores son válidos
-                        console.log('Latitud:', latitud, 'Ref:', latitudRef);
-                        console.log('Longitud:', longitud, 'Ref:', longitudRef);
-
                         if (latitud && longitud) {
-                            // Convierte coordenadas GPS en formato DMS a decimal
                             var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
                             var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
                             
@@ -74,7 +69,7 @@
                             var marker = L.marker([lat, lon]).addTo(map);
                             marker.bindPopup('<img src="' + fotoUrl + '" width="150" height="150"/>');
                         } else {
-                            console.error('No se encontraron datos GPS válidos en:', fotoUrl);
+                            console.error('No se encontraron datos GPS en:', fotoUrl);
                         }
                     });
                 };
