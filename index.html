@@ -16,6 +16,13 @@
             padding: 5px;
             border-radius: 5px;
         }
+
+        /* Estilo para GeoJSON */
+        .geojson-area {
+            color: blue; /* Color de borde */
+            fillColor: cyan; /* Color de relleno */
+            fillOpacity: 0.5; /* Opacidad del relleno */
+        }
     </style>
 </head>
 <body>
@@ -26,17 +33,22 @@
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
     <script>
-        // Inicializa el mapa
-        var map = L.map('map').setView([19.4326, -99.1332], 10); // Usa coordenadas de ejemplo (Ciudad de México)
+        // Inicializa el mapa centrado en Chalco, Estado de México
+        var map = L.map('map').setView([19.2647, -98.8972], 13); // Coordenadas de Chalco con zoom 13
 
         // Añade una capa de mapas de OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
         }).addTo(map);
 
+        // Crear capas de grupo vacías para fotos y GeoJSON
+        var capaRecorrido2308 = L.layerGroup();
+        var capaRecorrido2708 = L.layerGroup();
+        var capaInundacion = L.layerGroup();
+
         // Rutas de las carpetas de fotos en GitHub
         var fotosCarpeta1 = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_23082024/';
-        var fotosCarpeta2 = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_27082024/'; // Nueva carpeta
+        var fotosCarpeta2 = 'https://raw.githubusercontent.com/ErikaLeonS/chalco/main/fotos_rec_27082024/';
 
         // Número total de fotos en cada carpeta
         var totalFotos1 = 148;
@@ -81,15 +93,17 @@
             };
         }
 
-        // Función para cargar fotos y agregar marcadores al mapa
-        function cargarFotos(fotosCarpeta, totalFotos, popupClase, iconoPersonalizado) {
-            for (var num = 1; num <= totalFotos; num++) { // Itera sobre todas las fotos
-                (function(num) { // Usamos una IIFE para capturar el valor de 'num'
-                    var fotoNombre = '1 (' + num + ').jpg'; // Construye el nombre de archivo
-                    var fotoUrl = fotosCarpeta + encodeFileName(fotoNombre); // Codifica los espacios en la URL
-                    verificarURL(fotoUrl); // Verifica cada URL generada
+        // Función para cargar fotos de manera asíncrona y agregar marcadores
+        async function cargarFotosAsincrono(fotosCarpeta, totalFotos, popupClase, iconoPersonalizado, capa) {
+            const promesas = [];
 
-                    var img = new Image();
+            for (let num = 1; num <= totalFotos; num++) {
+                const fotoNombre = '1 (' + num + ').jpg';
+                const fotoUrl = fotosCarpeta + encodeFileName(fotoNombre);
+                verificarURL(fotoUrl);
+
+                const promesa = new Promise((resolve, reject) => {
+                    const img = new Image();
                     img.src = fotoUrl;
 
                     img.onload = function() {
@@ -99,31 +113,71 @@
                             var longitud = EXIF.getTag(this, "GPSLongitude");
                             var longitudRef = EXIF.getTag(this, "GPSLongitudeRef");
 
+                            // Verificar si los datos GPS son válidos
                             if (latitud && longitud) {
                                 var lat = convertirDMSToDD(latitud[0], latitud[1], latitud[2], latitudRef);
                                 var lon = convertirDMSToDD(longitud[0], longitud[1], longitud[2], longitudRef);
-                                
-                                // Añadir marcador al mapa con icono personalizado si se proporciona
-                                var marker = L.marker([lat, lon], { icon: iconoPersonalizado }).addTo(map);
+
+                                // Añadir marcador al mapa con icono personalizado
+                                var marker = L.marker([lat, lon], { icon: iconoPersonalizado }).addTo(capa);
                                 marker.bindPopup('<div class="' + popupClase + '"><img src="' + fotoUrl + '" width="150" height="150"/></div>');
                             } else {
-                                console.error('No se encontraron datos GPS en:', fotoUrl);
+                                console.warn('No se encontraron datos GPS en:', fotoUrl);
                             }
+                            resolve();
                         });
                     };
 
                     img.onerror = function() {
                         console.error('Error al cargar la foto:', fotoUrl);
+                        resolve(); // Resolver incluso si hay un error para que todas las promesas se completen
                     };
-                })(num); // IIFE para capturar el valor actual de 'num'
+                });
+
+                promesas.push(promesa);
             }
+
+            await Promise.all(promesas); // Esperar a que todas las fotos se carguen
+            console.log('Todas las fotos de ' + fotosCarpeta + ' han sido cargadas.');
         }
 
-        // Cargar fotos de la primera carpeta con popup estándar y marcador predeterminado
-        cargarFotos(fotosCarpeta1, totalFotos1, '', L.Icon.Default());
+        // Cargar fotos de la primera carpeta en su respectiva capa de grupo
+        cargarFotosAsincrono(fotosCarpeta1, totalFotos1, '', L.Icon.Default(), capaRecorrido2308);
 
-        // Cargar fotos de la segunda carpeta con popup y marcador naranja
-        cargarFotos(fotosCarpeta2, totalFotos2, 'popup-naranja', iconoNaranja);
+        // Cargar fotos de la segunda carpeta en su respectiva capa de grupo
+        cargarFotosAsincrono(fotosCarpeta2, totalFotos2, 'popup-naranja', iconoNaranja, capaRecorrido2708);
+
+        // Cargar el GeoJSON y agregarlo a la capa de grupo de inundación
+        fetch('https://raw.githubusercontent.com/ErikaLeonS/chalco/main/inundacion.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: function (feature) {
+                        return {
+                            color: "blue",
+                            fillColor: "cyan",
+                            fillOpacity: 0.5,
+                            weight: 2
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.name) {
+                            layer.bindPopup("<b>" + feature.properties.name + "</b>");
+                        }
+                    }
+                }).addTo(capaInundacion);
+            })
+            .catch(error => console.error('Error al cargar el archivo GeoJSON:', error));
+
+        // Crear el control de capas
+        var capas = {
+            "Recorrido 23 de agosto de 2024": capaRecorrido2308,
+            "Recorrido 27 de agosto de 2024": capaRecorrido2708,
+            "Inundación": capaInundacion
+        };
+
+        // Agregar el control de capas al mapa
+        L.control.layers(null, capas).addTo(map);
     </script>
 </body>
 </html>
